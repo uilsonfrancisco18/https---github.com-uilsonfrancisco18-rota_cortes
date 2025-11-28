@@ -11,14 +11,14 @@ export function Footer() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Scissors className="w-8 h-8 text-[#C9A961]" />
-              <span className="text-2xl text-white">BarberShop</span>
+              <span className="text-2xl text-white">Barbearia Aliança</span>
             </div>
             <p className="text-gray-400 mb-4">
-              Estilo e tradição em cada corte. Transformando sua imagem com excelência desde 2013.
+              Estilo e tradição em cada corte. Transformando sua imagem com excelência.
             </p>
             <div className="flex gap-3">
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/valblackoficial?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-[#C9A961]/20 p-3 rounded-full hover:bg-[#C9A961] transition-colors group"
@@ -26,7 +26,7 @@ export function Footer() {
                 <Instagram className="w-5 h-5 text-[#C9A961] group-hover:text-black transition-colors" />
               </a>
               <a
-                href="https://facebook.com"
+                href="https://facebook.com/seu_perfil_aqui" // SUBSTITUA COM SEU FACEBOOK QUANDO TIVER
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-[#C9A961]/20 p-3 rounded-full hover:bg-[#C9A961] transition-colors group"
@@ -83,14 +83,17 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Services */}
+          {/* Services - ATUALIZADO */}
           <div>
             <h3 className="text-white mb-4">Serviços</h3>
             <ul className="space-y-2 text-gray-400">
               <li>Corte Tradicional</li>
+              <li>Corte Americano</li>
+              <li>Corte Infantil</li>
               <li>Corte + Barba</li>
               <li>Barboterapia</li>
               <li>Platinado/Coloração</li>
+              <li>Alisamento Americano</li>
               <li>Design de Sobrancelhas</li>
             </ul>
           </div>
@@ -101,18 +104,18 @@ export function Footer() {
             <ul className="space-y-3">
               <li className="flex items-start gap-2 text-gray-400">
                 <MapPin className="w-5 h-5 text-[#C9A961] flex-shrink-0 mt-0.5" />
-                <span>Rua da Consolação, 1234<br />Centro - São Paulo, SP</span>
+                <span>R. Manoel Quirino, 56<br />Aliança - PE, 55890-000</span>
               </li>
               <li className="flex items-center gap-2 text-gray-400">
                 <Phone className="w-5 h-5 text-[#C9A961] flex-shrink-0" />
-                <a href="tel:+5511999999999" className="hover:text-[#C9A961] transition-colors">
-                  (11) 99999-9999
+                <a href="tel:+558191570744" className="hover:text-[#C9A961] transition-colors">
+                  +55 81 91570744
                 </a>
               </li>
               <li className="flex items-center gap-2 text-gray-400">
                 <Mail className="w-5 h-5 text-[#C9A961] flex-shrink-0" />
-                <a href="mailto:contato@barbershop.com" className="hover:text-[#C9A961] transition-colors">
-                  contato@barbershop.com
+                <a href="mailto:contato@barbeariaalianca.com" className="hover:text-[#C9A961] transition-colors">
+                  contato@barbeariaalianca.com
                 </a>
               </li>
             </ul>
@@ -122,7 +125,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-[#2A2A2A] text-center text-gray-400">
           <p>
-            © {currentYear} BarberShop. Todos os direitos reservados.
+            © {currentYear} Barbearia Aliança. Todos os direitos reservados.
           </p>
         </div>
       </div>

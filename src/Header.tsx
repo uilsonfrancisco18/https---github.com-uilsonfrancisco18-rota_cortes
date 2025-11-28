@@ -54,7 +54,7 @@ export function Header({ onBookingClick }: HeaderProps) {
             onClick={() => scrollToSection("home")}
           >
             <Scissors className="w-8 h-8 text-[#C9A961]" />
-            <span className="text-2xl text-white">BarberShop</span>
+            <span className="text-2xl text-white">Barbearia Aliança</span>
           </motion.div>
 
           {/* Desktop Navigation */}

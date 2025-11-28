@@ -77,7 +77,8 @@ export function Hero({ onBookingClick }: HeroProps) {
                 </div>
                 <div>
                   <p className="text-sm text-gray-400">Horário</p>
-                  <p className="text-white">Seg-Sáb: 8h-18h</p>
+                  <p className="text-white">Ter-Sáb: 8h-18h</p>
+                  <p className="text-xs text-gray-400">Seg: Fechado</p>
                 </div>
               </motion.div>
 
@@ -92,7 +93,7 @@ export function Hero({ onBookingClick }: HeroProps) {
                 </div>
                 <div>
                   <p className="text-sm text-gray-400">Localização</p>
-                  <p className="text-white">Centro, São Paulo</p>
+                  <p className="text-white">Aliança, PE</p>
                 </div>
               </motion.div>
 

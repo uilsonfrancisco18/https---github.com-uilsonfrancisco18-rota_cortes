@@ -1,27 +1,13 @@
 import { motion } from "motion/react";
-import { Instagram, Award } from "lucide-react";
+import { Instagram } from "lucide-react"; // Award removido daqui
 
 const barbers = [
   {
-    name: "Roberto Silva",
+    name: "Valdeir Gomes",
     role: "Master Barber",
-    experience: "12 anos de experiência",
-    specialty: "Especialista em degradê",
-    instagram: "@roberto_barber",
-  },
-  {
-    name: "Carlos Mendes",
-    role: "Barber Sênior",
-    experience: "8 anos de experiência",
-    specialty: "Especialista em barboterapia",
-    instagram: "@carlos_barber",
-  },
-  {
-    name: "Felipe Santos",
-    role: "Barber",
-    experience: "5 anos de experiência",
-    specialty: "Especialista em coloração",
-    instagram: "@felipe_barber",
+    experience: "10 anos de experiência",
+    specialty: "Especialista em cortes, barba e coloração",
+    instagram: "@valblackoficial",
   },
 ];
 
@@ -38,18 +24,18 @@ export function Barbers() {
           className="text-center mb-16"
         >
           <span className="text-[#C9A961] uppercase tracking-wider">
-            Nossa Equipe
+            Nosso Barbeiro
           </span>
           <h2 className="text-4xl lg:text-5xl mt-4 mb-6 text-white">
-            Mestres da <span className="text-[#C9A961]">Barbearia</span>
+            Profissional <span className="text-[#C9A961]">Especializado</span>
           </h2>
           <p className="text-gray-400 max-w-2xl mx-auto text-lg">
-            Profissionais qualificados e apaixonados por entregar o melhor serviço.
+            Atendimento premium com qualidade, experiência e dedicação.
           </p>
         </motion.div>
 
-        {/* Barbers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Barber Card */}
+        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-8 max-w-xl mx-auto">
           {barbers.map((barber, index) => (
             <motion.div
               key={barber.name}
@@ -59,13 +45,19 @@ export function Barbers() {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               className="group"
             >
-              {/* Image Placeholder */}
+              {/* Imagem do Barbeiro - Substituindo o Placeholder do Award */}
               <div className="relative overflow-hidden rounded-lg mb-6 aspect-[3/4] bg-gradient-to-br from-[#2A2A2A] to-[#1A1A1A]">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Award className="w-24 h-24 text-[#C9A961]/20" />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                 
+                {/* NOVO: A tag <img> com o caminho para a sua imagem salva em public/ */}
+                <img
+                    src="/rota-barbearia-promo.jpeg"
+                    alt={`Foto de ${barber.name} e Rota Barbearia`}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+
+                {/* O gradiente é mantido para que o Social Overlay fique visível */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+
                 {/* Social Overlay */}
                 <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                   <a
