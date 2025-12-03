@@ -42,9 +42,9 @@ export function Contact() {
               <div>
                 <h3 className="text-xl mb-2 text-white">Endereço</h3>
                 <p className="text-gray-400">
-                  Rua da Consolação, 1234<br />
-                  Centro - São Paulo, SP<br />
-                  CEP: 01301-100
+                  R. Manoel Quirino, 56 - Alianca<br />
+                  Aliança - PE<br />
+                  CEP: 55890-000
                 </p>
               </div>
             </div>
@@ -57,12 +57,8 @@ export function Contact() {
               <div>
                 <h3 className="text-xl mb-2 text-white">Telefone</h3>
                 <p className="text-gray-400">
-                  <a href="tel:+5511999999999" className="hover:text-[#C9A961] transition-colors">
-                    (11) 99999-9999
-                  </a>
-                  <br />
-                  <a href="tel:+5511999999998" className="hover:text-[#C9A961] transition-colors">
-                    (11) 99999-9998
+                  <a href="tel:+558191570744" className="hover:text-[#C9A961] transition-colors">
+                    +55 81 91570744
                   </a>
                 </p>
               </div>
@@ -76,8 +72,8 @@ export function Contact() {
               <div>
                 <h3 className="text-xl mb-2 text-white">E-mail</h3>
                 <p className="text-gray-400">
-                  <a href="mailto:contato@barbershop.com" className="hover:text-[#C9A961] transition-colors">
-                    contato@barbershop.com
+                  <a href="mailto:contato@barbeariaalianca.com" className="hover:text-[#C9A961] transition-colors">
+                    contato@barbeariaalianca.com
                   </a>
                 </p>
               </div>
@@ -91,9 +87,10 @@ export function Contact() {
               <div>
                 <h3 className="text-xl mb-2 text-white">Horário de Funcionamento</h3>
                 <p className="text-gray-400">
-                  Segunda a Sexta: 8h00 - 18h00<br />
+                  Terça a Sexta: 8h00 - 18h00<br />
                   Sábado: 8h00 - 16h00<br />
-                  Domingo: Fechado
+                  Domingo: 8h00 - 12h00<br />
+                  Segunda: Fechado
                 </p>
               </div>
             </div>
@@ -103,7 +100,7 @@ export function Contact() {
               <h3 className="text-xl mb-4 text-white">Redes Sociais</h3>
               <div className="flex gap-4">
                 <a
-                  href="https://instagram.com"
+                  href="https://www.instagram.com/valblackoficial?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-[#C9A961]/20 p-4 rounded-full hover:bg-[#C9A961] transition-colors group"
@@ -111,7 +108,7 @@ export function Contact() {
                   <Instagram className="w-6 h-6 text-[#C9A961] group-hover:text-black transition-colors" />
                 </a>
                 <a
-                  href="https://facebook.com"
+                  href="https://facebook.com/seu_perfil_aqui" // SUBSTITUA COM SEU FACEBOOK QUANDO TIVER
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-[#C9A961]/20 p-4 rounded-full hover:bg-[#C9A961] transition-colors group"
@@ -131,14 +128,14 @@ export function Contact() {
             className="rounded-lg overflow-hidden h-[500px] bg-[#1A1A1A] border border-[#2A2A2A]"
           >
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3657.1972783583607!2d-46.65886368502205!3d-23.561684984683654!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94ce59c8da0aa315%3A0xd59f9431f2c9776a!2sAv.%20Paulista%2C%20S%C3%A3o%20Paulo%20-%20SP!5e0!3m2!1sen!2sbr!4v1234567890"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3949.123456789012!2d-35.12345678901234!3d-7.123456789012345!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x7ac123456789012%3A0x1234567890abcdef!2sR.%20Manoel%20Quirino%2C%2056%20-%20Alianca%2C%20Alian%C3%A7a%20-%20PE%2C%2055890-000!5e0!3m2!1spt-BR!2sbr!4v1234567890123"
               width="100%"
               height="100%"
               style={{ border: 0 }}
               allowFullScreen
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title="Localização BarberShop"
+              title="Localização Barbearia Aliança"
             />
           </motion.div>
         </div>
