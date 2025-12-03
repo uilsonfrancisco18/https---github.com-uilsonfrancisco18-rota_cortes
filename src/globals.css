@@ -86,7 +86,7 @@
 
 @layer base {
   * {
-    @apply border-border ;
+    @apply border-border;
   }
 
   body {
@@ -147,3 +147,15 @@
 html {
   font-size: var(--font-size);
 }
+
+/* Apenas cores do calendário */
+.rdp-day_selected {
+  background: #6d28d9 !important;
+  color: white !important;
+}
+
+.rdp-day_today {
+  border: 1px solid #6d28d9 !important;
+}
+
+/* Removidas as regras de .rdp, .rdp-month, .rdp-weekdays */
