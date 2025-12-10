@@ -1,9 +1,11 @@
 ﻿
 import express from 'express';
 import { 
-    createAppointment, 
+    createAppointment,
     getUserAppointments,
     getAvailableSlots,
+    createPublicAppointment,
+    getPublicAppointments,
 } from '../controllers/AppointmentController.js';
 import { protect } from '../middlewares/AuthMiddleware.js';
 
@@ -15,6 +17,10 @@ router.get('/me', protect, getUserAppointments);
 
 // Rotas públicas (para o frontend buscar antes de agendar)
 router.get('/slots', getAvailableSlots); 
+
+// Rotas públicas para integração simples (sem auth)
+router.post('/public', createPublicAppointment);
+router.get('/public', getPublicAppointments);
 
 export default router;
 

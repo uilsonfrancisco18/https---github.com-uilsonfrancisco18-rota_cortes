@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./dialog";
 import { Button } from "./button";
 import { Input } from "./input";
@@ -107,7 +107,52 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
   const [email, setEmail] = useState("");
 
 
-  const [bookings, setBookings] = useState<Booking[]>([]);
+	const [bookings, setBookings] = useState<Booking[]>([]);
+
+	// Persist bookings in localStorage so agendamentos sobrevivem reloads
+	useEffect(() => {
+		// Try to load bookings from backend first; fallback to localStorage
+		const load = async () => {
+			try {
+				const res = await fetch('/api/appointments/public');
+				if (res.ok) {
+					const data = await res.json();
+					// data: [{ date: ..., duration: number }, ...]
+					const parsed: Booking[] = data.map((a: any) => {
+						const dt = new Date(a.date);
+						const dateKey = dt.toISOString().slice(0, 10);
+						const hh = dt.getHours().toString().padStart(2, '0');
+						const mm = dt.getMinutes().toString().padStart(2, '0');
+						return { dateKey, start: `${hh}:${mm}`, duration: a.duration } as Booking;
+					});
+					setBookings(parsed);
+					return;
+				}
+			} catch (e) {
+				// ignore, fallback
+			}
+
+			try {
+				const raw = localStorage.getItem("vb_bookings");
+				if (raw) {
+					const parsed = JSON.parse(raw) as Booking[];
+					setBookings(parsed);
+				}
+			} catch (e) {
+				console.warn("Não foi possível ler bookings do localStorage", e);
+			}
+		};
+
+		load();
+	}, []);
+
+	useEffect(() => {
+		try {
+			localStorage.setItem("vb_bookings", JSON.stringify(bookings));
+		} catch (e) {
+			console.warn("Não foi possível salvar bookings no localStorage", e);
+		}
+	}, [bookings]);
 
 
   const blockedDates = [
@@ -153,27 +198,52 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
     return blocked;
   };
 
+	// retorna as datas que estão totalmente bloqueadas (todos os slots ocupados)
+	const getFullyBlockedDates = (): string[] => {
+		const dates = Array.from(new Set(bookings.map((b) => b.dateKey)));
+		const fully: string[] = [];
+		for (const dKey of dates) {
+			const blocked = getBlockedSlotsForDate(dKey);
+			if (blocked.size >= ALL_SLOTS.length) fully.push(dKey);
+		}
+		return fully;
+	};
 
-  const filteredHours = (() => {
-    if (!date || date.getDay() === 0 || !selectedService) return [];
+
+	const filteredHours = (() => {
+		if (!date || date.getDay() === 0 || !selectedService) return [];
 
 
-    const dateKey = date.toISOString().slice(0, 10);
-    const blockedByBookings = getBlockedSlotsForDate(dateKey);
+		const dateKey = date.toISOString().slice(0, 10);
+		const blockedByBookings = getBlockedSlotsForDate(dateKey);
 
 
-    return ALL_SLOTS.filter((slot) => !blockedByBookings.has(slot));
-  })();
+		return ALL_SLOTS.filter((slot) => !blockedByBookings.has(slot));
+	})();
+
+	const noHoursMessage = () => {
+		if (!date) return null;
+		if (date.getDay() === 0) return "Domingo — a barbearia não abre.";
+		if (!selectedService) return "Selecione um serviço para ver horários.";
+		if (filteredHours.length === 0) return "Nenhum horário disponível nesta data.";
+		return null;
+	};
 
 
-  function handleConfirm() {
+	const getDurationFromServiceId = (id: string) => {
+		const s = services.find((x) => x.id === id);
+		if (!s) return 30;
+		return serviceDurations[s.name] ?? 30;
+	};
+
+	async function handleConfirm() {
     if (!selectedService || !date || !time || !name || !phone) {
       alert("Preencha todos os campos obrigatórios!");
       return;
     }
 
 
-    const duration = serviceDurations[selectedService] ?? 30;
+	const duration = getDurationFromServiceId(selectedService);
 
 
     const dateKey = date.toISOString().slice(0, 10);
@@ -208,19 +278,54 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
     console.log("Agendamento confirmado:", formatted);
 
 
-    setBookings((prev) => [
-      ...prev,
-      { dateKey, start: time, duration },
-    ]);
+		// Try to persist to backend; if fails, fallback to localOnly
+		try {
+			const payload = {
+				date: new Date(date.getFullYear(), date.getMonth(), date.getDate(), Number(time.split(":")[0]), Number(time.split(":")[1])).toISOString(),
+				serviceId: selectedService,
+				name,
+				phone,
+				email,
+			};
 
+			const res = await fetch('/api/appointments/public', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload),
+			});
 
-    onClose();
+			if (!res.ok) {
+				const text = await res.text();
+				console.warn('Backend booking failed:', res.status, text);
+				// fallback to local
+				setBookings((prev) => [...prev, { dateKey, start: time, duration }]);
+				onClose();
+				return;
+			}
+
+			// success
+			const created = await res.json();
+			// created.date is ISO
+			const dt = new Date(created.date);
+			const hh = dt.getHours().toString().padStart(2, '0');
+			const mm = dt.getMinutes().toString().padStart(2, '0');
+			setBookings((prev) => [...prev, { dateKey, start: `${hh}:${mm}`, duration }]);
+			onClose();
+			return;
+		} catch (e) {
+			console.warn('Erro ao persistir no backend, usando fallback local', e);
+			setBookings((prev) => [...prev, { dateKey, start: time, duration }]);
+			onClose();
+			return;
+		}
   }
+
+	// (dev helper removed) bookings now persisted to backend when possible
 
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg w-full bg-[#0A0A0A] border border-[#1F1F1F] text-white">
+	<DialogContent className="max-w-4xl w-full bg-[#0A0A0A] border border-[#1F1F1F] text-white max-h-[85vh] overflow-hidden mx-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             <Scissors size={20} />
@@ -229,36 +334,35 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
         </DialogHeader>
 
 
-        <div className="space-y-5">
+	<div className="space-y-5 max-h-[72vh] overflow-auto px-4 py-3">
           {/* Serviço - CÓDIGO ATUALIZADO */}
-          <div>
-            <Label>Serviço</Label>
-            <Select value={selectedService} onValueChange={setSelectedService}>
-              <SelectTrigger
-                className={[
-                  "mt-1 bg-[#101010] text-white rounded-lg",
-                  "h-12 px-4 text-sm sm:text-base",
-                  "border border-[#2A2A2A]",
-                  selectedService && "border-[#C9A961] border-2",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-              >
-                <SelectValue placeholder="Selecione um serviço" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#101010] text-white max-h-72">
-                {services.map((service) => (
-                  <SelectItem
-                    key={service.id}
-                    value={service.name}
-                    className="hover:bg-[#2A2A2A]"
-                  >
-                    {service.name} — {service.price}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+					<div>
+						<Label>Serviço</Label>
+						<div className="grid grid-cols-1 gap-2 mt-2 max-h-[300px] md:max-h-[420px] overflow-y-auto pr-2">
+							{services.map((service) => {
+								const active = selectedService === service.id;
+								return (
+									<button
+										key={service.id}
+										type="button"
+										onClick={() => setSelectedService(service.id)}
+										className={[
+											"w-full text-left px-3 py-2 rounded-md border",
+											active ? "border-[#C9A961] bg-[#1b1b1b]" : "border-[#2A2A2A] bg-[#101010]",
+										].join(" ")}
+									>
+										<div className="flex items-center justify-between">
+											<div>
+												<div className="text-sm font-medium">{service.name}</div>
+												<div className="text-xs text-zinc-400">{service.price}</div>
+											</div>
+											<div className="text-xs text-zinc-300">{getDurationFromServiceId(service.id)} min</div>
+										</div>
+									</button>
+								);
+							})}
+						</div>
+					</div>
 
 
           {/* Data - CÓDIGO ATUALIZADO E CENTRALIZADO */}
@@ -267,78 +371,78 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
               <h2 className="text-lg sm:text-xl font-semibold mb-3 text-center text-white">
                 Selecionar Data
               </h2>
-              <Calendar
-                selected={date}
-                onSelect={(d) => setDate(d)}
-                className="rounded-xl border border-[#2A2A2A] bg-[#101010] p-4 shadow-xl"
-                classNames={{
-                  month: "space-y-4",
-                  caption: "flex justify-center pt-1 relative items-center",
-                  caption_label: "text-sm font-medium text-white",
-                  nav: "space-x-1 flex items-center",
-                  nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-                  nav_icon: "h-4 w-4 text-white",
-                  table: "w-full border-collapse space-y-1",
-                  head_row: "flex",
-                  head_cell: "text-zinc-400 rounded-md w-9 font-normal text-[0.8rem]",
-                  row: "flex w-full mt-2",
-                  cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-zinc-900/50 [&:has([aria-selected])]:bg-[#C9A961]",
-                  day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 text-white",
-                  day_selected: "bg-[#C9A961] text-black hover:bg-[#B89951] focus:bg-[#B89951]",
-                  day_today: "bg-[#2A2A2A] text-white",
-                  day_outside: "day-outside text-zinc-500 opacity-50 aria-selected:bg-zinc-800/50 aria-selected:text-zinc-400 aria-selected:opacity-30",
-                  day_disabled: "text-zinc-500 opacity-50",
-                  day_range_middle: "aria-selected:bg-zinc-800 aria-selected:text-white",
-                  day_hidden: "invisible",
-                }}
-              />
+							<Calendar
+								selected={date}
+								onSelect={(d) => setDate(d)}
+								className="rounded-xl border border-[#2A2A2A] bg-[#101010] p-4 shadow-xl"
+								blockedDates={getFullyBlockedDates()}
+								classNames={{
+									month: "space-y-4",
+									caption: "flex justify-center pt-1 relative items-center",
+									caption_label: "text-sm font-medium text-white",
+									nav: "space-x-1 flex items-center",
+									nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+									nav_icon: "h-4 w-4 text-white",
+									table: "w-full border-collapse space-y-1",
+									head_row: "flex",
+									head_cell: "text-zinc-400 rounded-md w-9 font-normal text-[0.8rem]",
+									row: "flex w-full mt-2",
+									cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-zinc-900/50 [&:has([aria-selected])]:bg-[#C9A961]",
+									day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 text-white",
+									day_selected: "bg-[#C9A961] text-black hover:bg-[#B89951] focus:bg-[#B89951]",
+									day_today: "bg-[#2A2A2A] text-white",
+									day_outside: "day-outside text-zinc-500 opacity-50 aria-selected:bg-zinc-800/50 aria-selected:text-zinc-400 aria-selected:opacity-30",
+									day_disabled: "text-zinc-500 opacity-50",
+									day_range_middle: "aria-selected:bg-zinc-800 aria-selected:text-white",
+									day_hidden: "invisible",
+								}}
+							/>
             </div>
           </div>
 
 
           {/* Horário */}
-          <div>
-            <Label>Horário</Label>
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div>
+							<Label>Horário</Label>
+							{date?.getDay() === 0 && (
+								<p className="text-red-400 text-sm mb-2">Domingo — a barbearia não abre.</p>
+							)}
+							<div className="mt-2 h-[180px] md:h-[240px] overflow-y-auto rounded-md border border-[#2A2A2A] p-2 bg-[#101010]">
+								<div className="grid grid-cols-2 gap-2">
+									{ALL_SLOTS.map((slot) => {
+										const disabled = filteredHours.indexOf(slot) === -1;
+										return (
+											<button
+												key={slot}
+												type="button"
+												onClick={() => !disabled && setTime(slot)}
+												disabled={disabled}
+												className={[
+													"w-full py-2 rounded-md text-sm",
+													disabled ? "bg-transparent text-zinc-500 border border-transparent cursor-not-allowed" : (time === slot ? "bg-[#C9A961] text-black" : "bg-[#0f0f0f] text-white hover:bg-[#222]")
+												].join(" ")}
+											>
+												{slot}
+											</button>
+										);
+									})}
+								</div>
+							</div>
+							<p className="text-xs text-zinc-400 mt-1">Almoço: 12h às 14h (indisponível).</p>
+							{noHoursMessage() && <p className="text-sm text-yellow-300 mt-2">{noHoursMessage()}</p>}
+						</div>
 
-
-            {date?.getDay() === 0 && (
-              <p className="text-red-400 text-sm mb-2">
-                Domingo — a barbearia não abre.
-              </p>
-            )}
-
-
-            <div className="flex items-center gap-2 border border-[#2A2A2A] bg-[#101010] p-2 rounded-md">
-              <Clock size={18} />
-
-
-              <Select
-                value={time}
-                onValueChange={setTime}
-                disabled={filteredHours.length === 0 || !selectedService}
-              >
-                <SelectTrigger className="bg-[#101010] border-none text-white">
-                  <SelectValue placeholder="Selecione um horário" />
-                </SelectTrigger>
-
-
-                <SelectContent className="bg-[#101010] text-white border border-[#2A2A2A]">
-                  {filteredHours.map((hour) => (
-                    <SelectItem
-                      key={hour}
-                      value={hour}
-                      className="hover:bg-[#2A2A2A]"
-                    >
-                      {hour}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <p className="text-xs text-zinc-400 mt-1">
-              Almoço: 12h às 14h (indisponível).
-            </p>
-          </div>
+						<div className="col-span-1 md:col-span-1">
+							<Label>Resumo</Label>
+							<div className="mt-2 p-3 rounded-md border border-[#2A2A2A] bg-[#0f0f0f] text-sm">
+								<div className="mb-2"><strong>Serviço:</strong> {selectedService ? (services.find(s => s.id === selectedService)?.name) : '—'}</div>
+								<div className="mb-2"><strong>Data:</strong> {date ? format(date, 'dd/MM/yyyy', { locale: ptBR }) : '—'}</div>
+								<div className="mb-2"><strong>Horário:</strong> {time || '—'}</div>
+								<div className="mb-2"><strong>Duração:</strong> {selectedService ? `${getDurationFromServiceId(selectedService)} min` : '—'}</div>
+							</div>
+						</div>
+					</div>
 
 
           {/* Nome */}
@@ -393,6 +497,7 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
           >
             Confirmar Agendamento
           </Button>
+					{/* removed dev clear button - bookings persisted to backend when possible */}
         </div>
       </DialogContent>
     </Dialog>

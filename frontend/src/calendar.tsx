@@ -7,6 +7,7 @@ type CalendarProps = {
   onSelect?: (date: Date) => void;
   className?: string;
   sticky?: boolean; // se true, o header fica fixo ao topo do container
+  blockedDates?: string[]; // array de 'YYYY-MM-DD' que devem aparecer desabilitadas
 };
 
 const WEEK_DAYS = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
@@ -16,6 +17,7 @@ export const Calendar: React.FC<CalendarProps> = ({
   onSelect,
   className = "",
   sticky = false,
+  blockedDates,
 }) => {
   const today = new Date();
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -48,6 +50,8 @@ export const Calendar: React.FC<CalendarProps> = ({
   };
 
   const isDisabled = (date: Date) => {
+    const dateKey = date.toISOString().slice(0, 10);
+    if (blockedDates && blockedDates.includes(dateKey)) return true;
     return date.getDay() === 0 || isPast(date); // domingo ou passado
   };
 
@@ -145,11 +149,11 @@ export const Calendar: React.FC<CalendarProps> = ({
       className={`
         w-full
         mx-auto
-        p-3 sm:p-4
+        p-2 sm:p-3
         bg-[#0A0A0A] text-white
-        rounded-2xl shadow-xl border border-[#1F1F1F]
+        rounded-xl shadow-md border border-[#1F1F1F]
         flex flex-col
-        max-w-full sm:max-w-sm md:max-w-md lg:max-w-lg
+        max-w-full sm:max-w-sm md:max-w-md lg:max-w-md
         ${className}
       `}
     >
@@ -163,18 +167,18 @@ export const Calendar: React.FC<CalendarProps> = ({
           type="button"
           onClick={handlePrevMonth}
           aria-label="Mês anterior"
-          className="p-2 sm:p-3 rounded-md border border-[#2A2A2A] text-sm sm:text-base text-zinc-200 hover:bg-[#1F1F1F] touch-manipulation"
+          className="p-1.5 sm:p-2 rounded-md border border-[#2A2A2A] text-sm text-zinc-200 hover:bg-[#1F1F1F] touch-manipulation"
         >
           {"‹"}
         </button>
-        <h2 className="text-sm sm:text-lg font-semibold capitalize text-zinc-50">
+        <h2 className="text-sm sm:text-base font-semibold capitalize text-zinc-50">
           {monthLabel}
         </h2>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={goToToday}
-            className="text-xs sm:text-sm px-2 py-1 rounded-md border border-[#2A2A2A] text-zinc-200 hover:bg-[#1F1F1F]"
+            className="text-xs px-2 py-1 rounded-md border border-[#2A2A2A] text-zinc-200 hover:bg-[#1F1F1F]"
           >
             Hoje
           </button>
@@ -182,7 +186,7 @@ export const Calendar: React.FC<CalendarProps> = ({
             type="button"
             onClick={handleNextMonth}
             aria-label="Próximo mês"
-            className="p-2 sm:p-3 rounded-md border border-[#2A2A2A] text-sm sm:text-base text-zinc-200 hover:bg-[#1F1F1F] touch-manipulation"
+            className="p-1.5 sm:p-2 rounded-md border border-[#2A2A2A] text-sm text-zinc-200 hover:bg-[#1F1F1F] touch-manipulation"
           >
             {"›"}
           </button>
@@ -190,7 +194,7 @@ export const Calendar: React.FC<CalendarProps> = ({
       </div>
 
       <div className="overflow-x-auto -mx-1 px-1">
-        <div className="grid grid-cols-7 gap-1 mb-2 text-[0.65rem] sm:text-[0.75rem] font-semibold text-[#C9A961] text-center min-w-max">
+        <div className="grid grid-cols-7 gap-1 mb-2 text-[0.62rem] sm:text-[0.7rem] font-semibold text-[#C9A961] text-center min-w-max">
           {WEEK_DAYS.map((d) => (
             <span key={d} className="py-1">
               {d}
@@ -199,14 +203,18 @@ export const Calendar: React.FC<CalendarProps> = ({
         </div>
 
         {/* área com rolagem vertical para os dias (barra de rolagem dentro do componente) */}
-        <div className="max-h-[260px] sm:max-h-[340px] overflow-y-auto -mx-1 px-1">
-          <div className="grid grid-cols-7 gap-2 text-xs sm:text-sm" role="grid" aria-label={`Calendário ${monthLabel}`}>
+        <div
+          className="h-[200px] sm:h-[280px] overflow-y-auto -mx-1 px-1 vb-days-scroll"
+        >
+          <div className="grid grid-cols-7 gap-1 text-[0.72rem] sm:text-[0.8rem]" role="grid" aria-label={`Calendário ${monthLabel}`}>
             {Array.from({ length: firstWeekday }).map((_, index) => (
               <div key={`empty-${index}`} role="presentation" />
             ))}
 
             {days.map((day) => {
               const disabled = isDisabled(day);
+              const dateKey = day.toISOString().slice(0, 10);
+              const fullyBlocked = blockedDates ? blockedDates.includes(dateKey) : false;
               const selectedDay = isSameDay(selected, day);
               const iso = day.toISOString();
 
@@ -254,11 +262,12 @@ export const Calendar: React.FC<CalendarProps> = ({
                   aria-label={day.toLocaleDateString("pt-BR", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
                   tabIndex={disabled ? -1 : 0}
                   className={[
-                    "h-12 w-12 sm:h-10 sm:w-10 mx-auto flex items-center justify-center rounded-full transition-none select-none",
+                    "h-9 w-9 sm:h-8 sm:w-8 mx-auto flex items-center justify-center rounded-md transition-none select-none",
                     disabled
                       ? "text-zinc-500 cursor-not-allowed bg-transparent"
                       : "text-zinc-100 hover:bg-[#222] active:scale-95",
                     selectedDay && "bg-[#C9A961] text-black font-semibold",
+                    fullyBlocked && !selectedDay ? "opacity-60 line-through text-red-300" : "",
                   ].filter(Boolean).join(" ")}
                   style={{ touchAction: "manipulation" }}
                 >
