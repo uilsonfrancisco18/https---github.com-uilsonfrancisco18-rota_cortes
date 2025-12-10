@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // MUDANÇA: PostgreSQL
+}
+
+// Seus Models (Usuário, Serviço, Agendamento) virão aqui.
+// Por enquanto, vamos manter os models vazios se o seu arquivo ainda não os tiver.
+
+// Exemplo de Model (Se você ainda não os tem, adicione-os para o Prisma funcionar)
+model User {
+  id           String @id @default(uuid())
+  email        String @unique
+  password     String
+  name         String
+  role         String @default("CLIENT") // ADMIN, BARBER, CLIENT
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  appointments Appointment[]
+}
+
+model Service {
+  id           String @id @default(uuid())
+  name         String @unique
+  price        Float
+  duration     Int    // Duração em minutos
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  appointments Appointment[]
+}
+
+model Appointment {
+  id           String @id @default(uuid())
+  date         DateTime // Data e hora do agendamento
+  status       String @default("SCHEDULED") // SCHEDULED, CANCELLED, COMPLETED
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relacionamentos
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  
+  serviceId    String
+  service      Service  @relation(fields: [serviceId], references: [id])
+}
