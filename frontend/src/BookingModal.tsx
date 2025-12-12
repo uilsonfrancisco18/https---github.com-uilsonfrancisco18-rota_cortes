@@ -309,7 +309,18 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
 			const dt = new Date(created.date);
 			const hh = dt.getHours().toString().padStart(2, '0');
 			const mm = dt.getMinutes().toString().padStart(2, '0');
+			
+			// Salvar userId no localStorage para acesso posterior
+			if (created.userId) {
+				localStorage.setItem("userId", created.userId);
+				localStorage.setItem("userEmail", email);
+				localStorage.setItem("userName", name);
+			}
+			
 			setBookings((prev) => [...prev, { dateKey, start: `${hh}:${mm}`, duration }]);
+			
+			// Mostrar mensagem de sucesso
+			alert("Agendamento realizado com sucesso! Você pode acompanhar em 'Meus Agendamentos'.");
 			onClose();
 			return;
 		} catch (e) {

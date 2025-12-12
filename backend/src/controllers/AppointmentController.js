@@ -79,7 +79,7 @@ export const getUserAppointments = async (req, res) => {
     try {
         const appointments = await prisma.appointment.findMany({
             where: { userId },
-            include: { service: { select: { name: true, duration: true } } },
+            include: { service: { select: { name: true, duration: true, price: true } } },
             orderBy: { date: 'asc' },
         });
         return res.status(200).json(appointments);
@@ -188,7 +188,7 @@ export const createPublicAppointment = async (req, res) => {
                 userId: user.id,
                 status: 'CONFIRMED',
             },
-            include: { service: { select: { name: true, duration: true } }, user: { select: { name: true, phone: true, email: true } } },
+            include: { service: { select: { name: true, duration: true } }, user: { select: { id: true, name: true, phone: true, email: true } } },
         });
         return res.status(201).json(appt);
     } catch (error) {
@@ -236,6 +236,42 @@ export const getPublicAppointments = async (req, res) => {
             console.error('Fallback read failed:', e);
             return res.status(500).json({ error: 'Erro interno.' });
         }
+    }
+};
+
+// 4. Cancelar um agendamento (Protegido)
+export const cancelAppointment = async (req, res) => {
+    const { appointmentId } = req.params;
+    const userId = req.userId;
+
+    if (!appointmentId) {
+        return res.status(400).json({ error: 'ID do agendamento é obrigatório.' });
+    }
+
+    try {
+        const appointment = await prisma.appointment.findUnique({
+            where: { id: appointmentId },
+        });
+
+        if (!appointment) {
+            return res.status(404).json({ error: 'Agendamento não encontrado.' });
+        }
+
+        // Verificar se o agendamento pertence ao usuário
+        if (appointment.userId !== userId) {
+            return res.status(403).json({ error: 'Você não tem permissão para cancelar este agendamento.' });
+        }
+
+        const cancelled = await prisma.appointment.update({
+            where: { id: appointmentId },
+            data: { status: 'CANCELLED' },
+            include: { service: { select: { name: true, duration: true } } },
+        });
+
+        return res.status(200).json(cancelled);
+    } catch (error) {
+        console.error('Erro ao cancelar agendamento:', error);
+        return res.status(500).json({ error: 'Erro interno ao cancelar agendamento.' });
     }
 };
 

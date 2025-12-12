@@ -1,11 +1,7 @@
-﻿// src/server.js (CORREÇÃO FINAL DE IMPORTAÇÃO para Prisma v7/ESM)
-
-import express from 'express';
+﻿import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import pkg from '@prisma/client';
-const { PrismaClient } = pkg;
-import { PrismaPg } from '@prisma/adapter-pg'; 
+import { PrismaClient } from '@prisma/client';
 import ServiceRoutes from './routes/ServiceRoutes.js';
 import AuthRoutes from './routes/AuthRoutes.js';
 import AppointmentRoutes from './routes/AppointmentRoutes.js';
@@ -13,7 +9,7 @@ import AppointmentRoutes from './routes/AppointmentRoutes.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 
 // MIDDLEWARES GERAIS
 app.use(cors({
@@ -24,12 +20,9 @@ app.use(cors({
 
 app.use(express.json());
 
-// Inicializa o Prisma Client
+// Inicializa o Prisma Client (SQLite)
 // -----------------------------------------------------------
-const adapter = new PrismaPg({ 
-  url: process.env.DATABASE_URL 
-});
-export const prisma = new PrismaClient({ adapter });
+export const prisma = new PrismaClient();
 // -----------------------------------------------------------
 
 

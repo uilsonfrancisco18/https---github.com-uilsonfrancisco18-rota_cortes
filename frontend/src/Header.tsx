@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { Button } from "./button";
-import { Scissors, Menu, X } from "lucide-react";
+import { Scissors, Menu, X, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 interface HeaderProps {
   onBookingClick: () => void;
+  onMyAppointmentsClick: () => void;
 }
 
-export function Header({ onBookingClick }: HeaderProps) {
+export function Header({ onBookingClick, onMyAppointmentsClick }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -16,7 +17,10 @@ export function Header({ onBookingClick }: HeaderProps) {
       setIsScrolled(window.scrollY > 50);
     };
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   const scrollToSection = (id: string) => {
@@ -71,10 +75,18 @@ export function Header({ onBookingClick }: HeaderProps) {
           </nav>
 
           {/* CTA Button */}
-          <div className="hidden lg:block">
+          <div className="hidden lg:flex items-center gap-4">
+            <Button
+              onClick={onMyAppointmentsClick}
+              className="bg-[#C9A961] hover:bg-[#B89951] text-black font-semibold"
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Meus Agendamentos
+            </Button>
             <Button
               onClick={onBookingClick}
-              className="bg-[#C9A961] hover:bg-[#B89951] text-black"
+              variant="outline"
+              className="border-[#C9A961] text-[#C9A961] hover:bg-[#C9A961] hover:text-black"
             >
               Agendar Agora
             </Button>
@@ -115,10 +127,21 @@ export function Header({ onBookingClick }: HeaderProps) {
               ))}
               <Button
                 onClick={() => {
+                  onMyAppointmentsClick();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="bg-[#C9A961] hover:bg-[#B89951] text-black w-full mt-2 font-semibold"
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Meus Agendamentos
+              </Button>
+              <Button
+                onClick={() => {
                   onBookingClick();
                   setIsMobileMenuOpen(false);
                 }}
-                className="bg-[#C9A961] hover:bg-[#B89951] text-black w-full mt-2"
+                variant="outline"
+                className="border-[#C9A961] text-[#C9A961] hover:bg-[#C9A961] hover:text-black w-full"
               >
                 Agendar Agora
               </Button>
